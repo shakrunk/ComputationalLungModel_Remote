@@ -20,8 +20,8 @@ clc;                % Clear the command line
 
 % Print this File's Metadata to Command Line
 fprintf("<strong># ~/Models/   m</strong>\n");                              %lgf
-fprintf("<strong># File: Lung_2.m</strong>\n");                             %lgf
-fprintf("<strong># Title: Computational Lung Model (ver 2)</strong>\n");    %lgf
+fprintf("<strong># File: Lung_3.m</strong>\n");                             %lgf
+fprintf("<strong># Title: Computational Lung Model (ver 3)</strong>\n");    %lgf
 fprintf("<strong># Authors:</strong>\n#   - Neil A. Kumar\n#   - " + ...    %lgf
     "Helio Sulbaran\n");                                                    %lgf
 fprintf("<strong># Dependencies:</strong> None\n");                         %lgf
