@@ -51,7 +51,7 @@ T = 310;                % [     K     ] Body temperature
 B_O2= 40/100;
 B_CO2= 45/40;
 D_O2= 0.024; %Diffusion coefficient of O2 in (cm^2/s)
-D_CO2= 0.000016; %Diffusion coefficient of CO2 in (um^2/s)
+D_CO2= 0.000016; %Diffusion coefficient of CO2 in (cm^2/s)
 fprintf('Model constants created\n'); %lgf
 
 % Set Initial Conditions
