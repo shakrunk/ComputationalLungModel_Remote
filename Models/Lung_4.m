@@ -42,16 +42,10 @@ fprintf('Time parameters initialized\n'); %lgf
 V_A = 500e-6;           % [     L     ] Alveolar tidal volume (assume 500 mL)
 R = 8.314;              % [ J/(mol*K) ] Molar gas constant
 T = 310;                % [     K     ] Body temperature
-
-%%%Helio New addition%%%
-%permeabilit =BD
-%B B= Conc. in/ Conc. Out
-%D D= Diffusion coeff.
-
-B_O2= 40/100;
-B_CO2= 45/40;
-D_O2= 0.024; %Diffusion coefficient of O2 in (cm^2/s)
-D_CO2= 0.000016; %Diffusion coefficient of CO2 in (cm^2/s)
+B_O2 = 40/100;          % [ unit-less ] O2 Partition coefficient
+B_CO2 = 45/40;          % [ unit-less ] CO2 Partition coefficient
+D_O2 = 0.024;           % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
+D_CO2 = 0.000016;       % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
 fprintf('Model constants created\n'); %lgf
 
 % Set Initial Conditions
