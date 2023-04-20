@@ -1,4 +1,4 @@
-%% Computational Lung Model (ver 2)
+%% Computational Lung Model (ver 3)
 % BIOE-5011-001 S23 Systems Physiology for BioEngineers w/ Prof. Jeffery Jacot, PhD
 
 %% About Script
