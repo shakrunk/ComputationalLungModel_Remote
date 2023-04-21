@@ -51,6 +51,8 @@ fprintf('Model constants created\n'); %lgf
 % Set Initial Conditions
 P_O2_alv = 100;         % [   mmHg    ] Partial pressure of O2 in alveoli
 P_CO2_alv = 40;         % [   mmHg    ] Partial pressure of CO2 in alveoli
+P_O2_cap = 100;         % [   mmHg    ] Partial pressure of O2 in capillary
+P_CO2_cap = 40;         % [   mmHg    ] Partial pressure of CO2 in capillary
 fprintf('Initial conditions set\n'); %lgf
 
 %% Main Computation Loop
@@ -64,8 +66,8 @@ fprintf('Space preallocated for variables\n'); %lgf
 fprintf('Entering main loop...');
 for i = 1:1:length(t)
     % Compute exchange rates (use simple linear relationships)
-    O2_exchange_rate(i) = D_O2*B_O2 * (P_O2_alv - 40);
-    CO2_exchange_rate(i) = D_CO2 *B_CO2 *(45 - P_CO2_alv);
+    O2_exchange_rate(i) = D_O2*B_O2 * (P_O2_alv - P_O2_cap);
+    CO2_exchange_rate(i) = D_CO2*B_CO2 * (P_CO2_alv - P_CO2_cap);
     
     % Update alveolar partial pressures
     P_O2_alv = P_O2_alv + (O2_exchange_rate(i) - CO2_exchange_rate(i)) * dt;
