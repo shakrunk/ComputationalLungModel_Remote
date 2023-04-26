@@ -38,21 +38,28 @@ dt = 0.01;              % [     s     ] Time step
 time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
+% Initialize Molecule Parameters
+beta__O2 = 4.5;         % [ unit-less ] O2 oil-water partition coefficient
+beta_CO2 = 4.5;         % [ unit-less ] CO2 oil-water partition coefficient
+D__O2 = 1;              % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
+D_CO2 = 1;              % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
+fprintf('Molecule parameters initialized\n'); %lgf
+
+% Initialize Environmental Parameters
+P__O2_Air = 160;        % [   mmHg    ] Room air O2 partial pressure
+P_CO2_Air = 0.3;        % [   mmHg    ] Room air CO2 partial pressure
+fprintf('Environmental parameters initialized\n'); %lgf
+
 % Create Model Constants
 V_Tidal = 500e-3;       % [     L     ] Alveolar tidal volume (assume 500 mL)
 BR = 16;                % [breaths/min] Breath Rate
 SA = 1e-6;              % [   cm^2    ] Surface Area
-B__O2 = 4.5;            % [ unit-less ] O2 Partition coefficient
-B_CO2 = 4.5;            % [ unit-less ] CO2 Partition coefficient
-D__O2 = 1;              % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
-D_CO2 = 1;              % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
 l = 1e-4;               % [    cm     ] Width of lung membrane
 V_Cap = 1;              % [     L     ] Capilary volume (current random)
-Q_Cap = V_Cap/10;       % [    L/s    ] Capilary flow rate
-P__O2_AIn = 160;        % [   mmHg    ] Room air O2 partial pressure
-P_CO2_AIn = 0.3;        % [   mmHg    ] Room air CO2 partial pressure
+Q__Cap = V_Cap/10;      % [    L/s    ] Capilary flow rate
 P__O2_Art = 0.1;        % [   mmHg    ] Arterial blood O2 partial pressure
 P_CO2_Art = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
+V_Dead = 150e-3; % [L] Deadspace volume (assume 150 mL)
 fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
@@ -61,6 +68,7 @@ V_Func = @(t) (V_Tidal/2) * sin(2*pi*BR*t/60) + 5;
 dVdt_Func = @(t) (2*pi*BR*V_Tidal/120) * cos(2*pi*BR*t/60);
 
 % Set Initial Conditions
+initCond = struct;
 P_O2_alv_init  = 160;   % [   mmHg    ] Partial pressure of O2 in alveoli
 P_O2_cap_init  = 0.1;   % [   mmHg    ] Partial pressure of O2 in capillary
 P_CO2_alv_init = 0.3;   % [   mmHg    ] Partial pressure of CO2 in alveoli
@@ -110,16 +118,16 @@ for currentTimeStep = 1:1:length(time)
     end
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
-    diffRate__O2Alv = SA*D__O2*B__O2 * ( (P__O2_cap(currentTimeStep) - P__O2_alv(currentTimeStep))/l );
-    diffRate_CO2Alv = SA*D_CO2*B_CO2 * ( (P_CO2_cap(currentTimeStep) - P_CO2_alv(currentTimeStep))/l );
-    diffRate__O2Cap = SA*D__O2*B__O2 * ( (P__O2_alv(currentTimeStep) - P__O2_cap(currentTimeStep))/l );
-    diffRate_CO2Cap = SA*D_CO2*B_CO2 * ( (P_CO2_alv(currentTimeStep) - P_CO2_cap(currentTimeStep))/l );
+    diffRate__O2Alv = SA*D__O2*beta__O2 * ( (P__O2_cap(currentTimeStep) - P__O2_alv(currentTimeStep))/l );
+    diffRate_CO2Alv = SA*D_CO2*beta_CO2 * ( (P_CO2_cap(currentTimeStep) - P_CO2_alv(currentTimeStep))/l );
+    diffRate__O2Cap = SA*D__O2*beta__O2 * ( (P__O2_alv(currentTimeStep) - P__O2_cap(currentTimeStep))/l );
+    diffRate_CO2Cap = SA*D_CO2*beta_CO2 * ( (P_CO2_alv(currentTimeStep) - P_CO2_cap(currentTimeStep))/l );
 
     % Calculate partial pressure changes due to convection
-    flowRate__O2Alv = ( Q__AIn*P__O2_AIn - Q_AOut*P__O2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
-    flowRate_CO2Alv = ( Q__AIn*P_CO2_AIn - Q_AOut*P_CO2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
-    flowRate__O2Cap = ( (P__O2_Art - P__O2_cap(currentTimeStep))*Q_Cap ) / V_Cap;
-    flowRate_CO2Cap = ( (P_CO2_Art - P_CO2_cap(currentTimeStep))*Q_Cap ) / V_Cap;
+    flowRate__O2Alv = ( Q__AIn*P__O2_Air - Q_AOut*P__O2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
+    flowRate_CO2Alv = ( Q__AIn*P_CO2_Air - Q_AOut*P_CO2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
+    flowRate__O2Cap = ( Q__Cap*P__O2_Art - Q__Cap*P__O2_cap(currentTimeStep) ) / V_Cap;
+    flowRate_CO2Cap = ( Q__Cap*P_CO2_Art - Q__Cap*P_CO2_cap(currentTimeStep) ) / V_Cap;
 
     % Compute total partial pressure change (diffusion + convective flow)
     dPdt__O2_alv(currentTimeStep) = diffRate__O2Alv + flowRate__O2Alv;
