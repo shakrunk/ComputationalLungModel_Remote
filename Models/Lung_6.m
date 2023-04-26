@@ -94,7 +94,7 @@ fprintf('Initial conditions stored\n'); %lgf
 fprintf('Entering main loop...');
 for i = 1:1:length(t)
     
-    % Find the current volume and flow rates
+    % Find the current volume and flow rates (alveolus)
     V_Alv(i) = V_Func(t(i));
     dVdt = dVdt_Func(t(i));
     if dVdt > 0
