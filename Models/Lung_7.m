@@ -38,7 +38,7 @@ dt = 0.01;              % [     s     ] Time step
 time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
-% Initialize Molecule Parameters
+% Initialize Molecule Parameters (O2 and CO2)
 beta__O2 = 4.5;         % [ unit-less ] O2 oil-water partition coefficient
 beta_CO2 = 4.5;         % [ unit-less ] CO2 oil-water partition coefficient
 D__O2 = 1;              % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
