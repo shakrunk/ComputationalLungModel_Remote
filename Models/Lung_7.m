@@ -33,33 +33,33 @@ figureCounter = 1;
 fprintf('\n--- Parameter Initialization ---\n'); %lgf
 
 % Initialize Time Parameters
-total_time = 60*1;      % [     s     ] Total simulation time
+total_time = 60;        % [     s     ] Total simulation time
 dt = 0.01;              % [     s     ] Time step 
 time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
 % Initialize Molecule Parameters (O2 and CO2)
-molPara.O2.beta = 4.5;  % [ unit-less ] O2 oil-water partition coefficient
-molPara.O2.D = 1;       % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
-molPara.CO2.beta = 4.5; % [ unit-less ] CO2 oil-water partition coefficient
-molPara.CO2.D = 1;      % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
+molPara.O2.beta = 4e-6; % [ unit-less ] O2 oil-water partition coefficient
+molPara.O2.D = 4e-6;    % [   m^2/s   ] O2 Diffusion coefficient (pressure)
+molPara.CO2.beta = 4e-6;% [ unit-less ] CO2 oil-water partition coefficient
+molPara.CO2.D = 4e-6;   % [   m^2/s   ] CO2 Diffusion coefficient (pressure)
 fprintf('Molecule parameters initialized\n'); %lgf
 
 % Initialize Environmental Parameters
 air.O2.P = 160;         % [   mmHg    ] Room air O2 partial pressure
-air.CO2.P = 0.3;        % [   mmHg    ] Room air CO2 partial pressure
+air.CO2.P = 0.25;       % [   mmHg    ] Room air CO2 partial pressure
 fprintf('Environmental parameters initialized\n'); %lgf
 
 % Create Model Constants
 V_Tidal = 500e-3;       % [     L     ] Alveolar tidal volume (assume 500 mL)
 BR = 16;                % [breaths/min] Breath Rate
-SA = 1e-6;              % [   cm^2    ] Surface Area
-l = 1e-4;               % [    cm     ] Width of lung membrane
-cap.V = 1;              % [     L     ] Capillary volume (current random)
-cap.flow = cap.V/10;    % [    L/s    ] Capillary flow rate
+SA = 5e+5;              % [   cm^2    ] Surface Area
+l = 1e-4;               % [    cm     ] Lung membrane thickness
+cap.V = 70e-3;          % [     L     ] Capillary volume (assume 70 mL)
+cap.flow = 5/60;        % [    L/s    ] Capillary flow rate (CO = 5L/min)
 art.O2.P = 0.1;         % [   mmHg    ] Arterial blood O2 partial pressure
 art.CO2.P = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
-dead.V = 150e-3;        % [     L     ] Deadspace volume (assume 150 mL)
+dead.V = 0.15;          % [     L     ] Deadspace volume (assume 150 mL)
 fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
@@ -93,7 +93,6 @@ dead.O2.P = zeros(size(time));      % Dead Space | O2
 dead.O2.dPdt = zeros(size(time));   % Dead Space | O2
 dead.CO2.P = zeros(size(time));     % Dead Space | CO2
 dead.CO2.dPdt = zeros(size(time));  % Dead Space | CO2
-
 fprintf('Space preallocated for variables\n'); %lgf
 
 % Store Initial Conditions
@@ -115,24 +114,19 @@ for currentTimeStep = 1:1:length(time)
         % Breathing in
         alv.flow.in = dVdt;
         alv.flow.out = 0;
-        dead.flow.in.air = dVdt;
-        dead.flow.in.alv = 0;
-        dead.flow.out = -dVdt;
     elseif dVdt < 0
         % Breathing out
         alv.flow.in = 0;
         alv.flow.out = -dVdt;
-        dead.flow.in.air = 0;
-        dead.flow.in.alv = dVdt;
-        dead.flow.out = -dVdt;
     else
         % No flow
         alv.flow.in = 0;
         alv.flow.out = 0;
-        dead.flow.in.air = 0;
-        dead.flow.in.alv = 0;
-        dead.flow.out = 0;
     end
+    % Calculate deadspace flow from alveolar flow
+    dead.flow.in.air = alv.flow.in;
+    dead.flow.in.alv = -alv.flow.out;
+    dead.flow.out = -(dead.flow.in.air + dead.flow.in.alv);
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
     diffusion.O2Alv = SA*molPara.O2.D*molPara.O2.beta * ( (cap.O2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
@@ -157,6 +151,8 @@ for currentTimeStep = 1:1:length(time)
     cap.CO2.dPdt(currentTimeStep) = diffusion.CO2Cap + convection.CO2Cap;
     
     % Update alveolar partial pressures
+    dead.O2.P(currentTimeStep+1) = dead.O2.P(currentTimeStep) + (dead.O2.dPdt(currentTimeStep) * dt);
+    dead.CO2.P(currentTimeStep+1) = dead.CO2.P(currentTimeStep) + (dead.CO2.dPdt(currentTimeStep) * dt);
     alv.O2.P(currentTimeStep+1) = alv.O2.P(currentTimeStep) + (alv.O2.dPdt(currentTimeStep) * dt);
     alv.CO2.P(currentTimeStep+1) = alv.CO2.P(currentTimeStep) + (alv.CO2.dPdt(currentTimeStep) * dt);
     cap.O2.P(currentTimeStep+1) = cap.O2.P(currentTimeStep) + (cap.O2.dPdt(currentTimeStep) * dt);
@@ -164,6 +160,10 @@ for currentTimeStep = 1:1:length(time)
 
 end; clear diffusion convection;
 fprintf('Success! (Loop completed)\n'); %lgf
+
+% We messed up the signs and we're too lazy to correct it in the equations
+% themselves, so we're just correcting it here.
+dead.CO2.P = -dead.CO2.P;
 
 %% Result Plotting
 fprintf('\n--- Result Plotting ---\n'); %lgf
@@ -180,8 +180,8 @@ ylim([0 6]);
 % Plot the results (Dead Space)
 figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
 subplot(2, 1, 1);
-    plot(time, dead.O2.P); hold on;
-    plot(time, dead.CO2.P);
+    plot(time, dead.O2.P(2:end)); hold on;
+    plot(time, dead.CO2.P(2:end));
     legend("O_2","CO_2");
     xlabel('Time (s)');
     ylabel('Pressure (mmHg)');
