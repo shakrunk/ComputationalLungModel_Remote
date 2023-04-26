@@ -136,9 +136,9 @@ for currentTimeStep = 1:1:length(time)
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
     diffusion.O2Alv = SA*molPara.O2.D*molPara.O2.beta * ( (cap.O2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
-    diffusion.CO2Alv = SA*molPara.CO2.D*molPara.CO2.beta * ( (cap.CO2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
-    diffusion.O2Cap = SA*molPara.O2.D*molPara.O2.beta * ( (alv.O2.P(currentTimeStep) - cap.O2.P(currentTimeStep))/l );
-    diffusion.CO2Cap = SA*molPara.CO2.D*molPara.O2.beta * ( (alv.CO2.P(currentTimeStep) - cap.CO2.P(currentTimeStep))/l );
+    diffusion.CO2Alv = SA*molPara.CO2.D*molPara.CO2.beta * ( (cap.CO2.P(currentTimeStep) - alv.CO2.P(currentTimeStep))/l );
+    diffusion.O2Cap = -diffusion.O2Alv;
+    diffusion.CO2Cap = -diffusion.CO2Alv;
 
     % Calculate partial pressure changes due to convection
     convection.O2Dead = ( dead.flow.in.air*air.O2.P + dead.flow.in.alv*alv.O2.P(currentTimeStep) - dead.flow.out*dead.O2.P(currentTimeStep) ) / dead.V;
