@@ -112,22 +112,26 @@ for currentTimeStep = 1:1:length(time)
     alv.V(currentTimeStep) = V_Func(time(currentTimeStep));
     dVdt = dVdt_Func(time(currentTimeStep));
     if dVdt > 0
-        % Flow from deadlpace into the lungs
+        % Breathing in
         alv.flow.in = dVdt;
         alv.flow.out = 0;
-        % Flow through deadspace
-        dead.flow = dVdt;
+        dead.flow.in.air = dVdt;
+        dead.flow.in.alv = 0;
+        dead.flow.out = -dVdt;
     elseif dVdt < 0
-        % Flow out of the lungs into the deadspace
+        % Breathing out
         alv.flow.in = 0;
         alv.flow.out = -dVdt;
-        % Flow through deadspace
-        dead.flow = -dVdt;
+        dead.flow.in.air = 0;
+        dead.flow.in.alv = dVdt;
+        dead.flow.out = -dVdt;
     else
         % No flow
         alv.flow.in = 0;
         alv.flow.out = 0;
-        dead.flow = 0;
+        dead.flow.in.air = 0;
+        dead.flow.in.alv = 0;
+        dead.flow.out = 0;
     end
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
@@ -137,8 +141,8 @@ for currentTimeStep = 1:1:length(time)
     diffusion.CO2Cap = SA*molPara.CO2.D*molPara.O2.beta * ( (alv.CO2.P(currentTimeStep) - cap.CO2.P(currentTimeStep))/l );
 
     % Calculate partial pressure changes due to convection
-    convection.O2Dead = ( dead.flow*air.O2.P + dead.flow*alv.O2.P(currentTimeStep) - dead.flow*dead.O2.P(currentTimeStep) ) / dead.V;
-    convection.CO2Dead = ( dead.flow*air.CO2.P- dead.flow*dead.CO2.P(currentTimeStep) ) / dead.V;
+    convection.O2Dead = ( dead.flow.in.air*air.O2.P + dead.flow.in.alv*alv.O2.P(currentTimeStep) - dead.flow.out*dead.O2.P(currentTimeStep) ) / dead.V;
+    convection.CO2Dead = ( dead.flow.in.air*air.CO2.P + dead.flow.in.alv*alv.CO2.P(currentTimeStep) - dead.flow.out*dead.CO2.P(currentTimeStep) ) / dead.V;
     convection.O2Alv = ( alv.flow.in*dead.O2.P(currentTimeStep) - alv.flow.out*alv.O2.P(currentTimeStep) ) / alv.V(currentTimeStep);
     convection.CO2Alv = ( alv.flow.in*dead.CO2.P(currentTimeStep)- alv.flow.out*alv.CO2.P(currentTimeStep) ) / alv.V(currentTimeStep);
     convection.O2Cap = ( cap.flow*art.O2.P- cap.flow*cap.O2.P(currentTimeStep) ) / cap.V;
