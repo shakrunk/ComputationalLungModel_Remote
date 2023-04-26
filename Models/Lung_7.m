@@ -59,7 +59,7 @@ cap.V = 1;              % [     L     ] Capillary volume (current random)
 cap.flow = cap.V/10;    % [    L/s    ] Capillary flow rate
 art.O2.P = 0.1;         % [   mmHg    ] Arterial blood O2 partial pressure
 art.CO2.P = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
-dead.V = 150e-3; % [L] Deadspace volume (assume 150 mL)
+dead.V = 150e-3;        % [     L     ] Deadspace volume (assume 150 mL)
 fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
