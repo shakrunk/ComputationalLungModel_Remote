@@ -178,63 +178,63 @@ ylim([0 6]);
 
 % Plot the results (Alveolus)
 figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
-subplot(2, 2, 1);
+subplot(2, 1, 1);
     plot(time, alv.O2.P(2:end)); hold on;
     plot(time, alv.CO2.P(2:end));
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Alveolus Partial Pressure (mmHg)');
+    ylabel('Pressure (mmHg)');
     title('Alveolus Partial Pressure');
     fprintf('Results printed to figure %i, sublot 1\n',figureCounter-1);
-subplot(2, 2, 2);
+subplot(2, 1, 2);
     plot(time, alv.O2.dPdt); hold on;
     plot(time, alv.CO2.dPdt);
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Change in Partial Pressure (mmHg/s)');
+    ylabel('Pressure Change (mmHg/s)');
     title('Change in Alveolus Partial Pressure');
     fprintf('Results printed to figure %i, sublot 2\n',figureCounter-1);
 sgtitle("Alveolus");
 
 % Plot the results (Capillary)
 figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
-subplot(2, 2, 1);
+subplot(2, 1, 1);
     plot(time, cap.O2.P(2:end)); hold on;
     plot(time, cap.CO2.P(2:end));
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Capillary Partial Pressure (mmHg)');
+    ylabel('Pressure (mmHg)');
     title('Capillary Partial Pressure');
     fprintf('Results printed to figure %i, sublot 1\n',figureCounter-1);
-subplot(2, 2, 2);
+subplot(2, 1, 2);
     plot(time, cap.O2.dPdt); hold on;
     plot(time, cap.CO2.dPdt);
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Change in Partial Pressure (mmHg/s)');
+    ylabel('Pressure Change (mmHg/s)');
     title('Change in Capillary Partial Pressure');
     fprintf('Results printed to figure %i, sublot 2\n',figureCounter-1);
 sgtitle("Capillary");
 
 % Plot the results (Dead Space)
 figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
-subplot(2, 2, 1);
-    plot(time, dead.O2.P(2:end)); hold on;
-    plot(time, dead.CO2.P(2:end));
+subplot(2, 1, 1);
+    plot(time, dead.O2.P); hold on;
+    plot(time, dead.CO2.P);
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Alveolus Partial Pressure (mmHg)');
-    title('Alveolus Partial Pressure');
+    ylabel('Pressure (mmHg)');
+    title('Dead Space Partial Pressure');
     fprintf('Results printed to figure %i, sublot 1\n',figureCounter-1);
-subplot(2, 2, 2);
-    plot(time, alv.O2.dPdt); hold on;
-    plot(time, alv.CO2.dPdt);
+subplot(2, 1, 2);
+    plot(time, dead.O2.dPdt); hold on;
+    plot(time, dead.CO2.dPdt);
     legend("O_2","CO_2");
     xlabel('Time (s)');
-    ylabel('Change in Partial Pressure (mmHg/s)');
-    title('Change in Alveolus Partial Pressure');
+    ylabel('Pressure Change (mmHg/s)');
+    title('Change in Dead Space Partial Pressure');
     fprintf('Results printed to figure %i, sublot 2\n',figureCounter-1);
-sgtitle("Alveolus");
+sgtitle("Dead Space");
 
 %% Program End
 fprintf("\n<strong>## End of Program</strong>\n"); %lgf
