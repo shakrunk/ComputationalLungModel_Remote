@@ -49,13 +49,12 @@ B_CO2 = 4.5;            % [ unit-less ] CO2 Partition coefficient
 D_O2 = 1;               % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
 D_CO2 = 1;              % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
 l = 1e-4;               % [    cm     ] Width of lung membrane
-
-V_Cap = 1;
-Q_Cap = V_Cap/10;
-P__O2_AIn = 160;
-P_CO2_AIn = 0.3;
-P__O2_BIn = 0.1;
-P_CO2_BIn = 35;
+V_Cap = 1;              % [     L     ] Capilary volume (current random)
+Q_Cap = V_Cap/10;       % [    L/s    ] Capilary flow rate
+P__O2_AIn = 160;        % [   mmHg    ] Room air O2 partial pressure
+P_CO2_AIn = 0.3;        % [   mmHg    ] Room air CO2 partial pressure
+P__O2_BIn = 0.1;        % [   mmHg    ] Arterial blood O2 partial pressure
+P_CO2_BIn = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
 fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
