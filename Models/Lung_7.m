@@ -39,10 +39,10 @@ time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
 % Initialize Molecule Parameters (O2 and CO2)
-beta__O2 = 4.5;         % [ unit-less ] O2 oil-water partition coefficient
-beta_CO2 = 4.5;         % [ unit-less ] CO2 oil-water partition coefficient
-D__O2 = 1;              % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
-D_CO2 = 1;              % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
+molPara.O2.beta = 4.5;  % [ unit-less ] O2 oil-water partition coefficient
+molPara.O2.D = 1;       % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
+molPara.CO2.beta = 4.5; % [ unit-less ] CO2 oil-water partition coefficient
+molPara.CO2.D = 1;      % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
 fprintf('Molecule parameters initialized\n'); %lgf
 
 % Initialize Environmental Parameters
@@ -68,11 +68,10 @@ V_Func = @(t) (V_Tidal/2) * sin(2*pi*BR*t/60) + 5;
 dVdt_Func = @(t) (2*pi*BR*V_Tidal/120) * cos(2*pi*BR*t/60);
 
 % Set Initial Conditions
-initCond = struct;
-P_O2_alv_init  = 160;   % [   mmHg    ] Partial pressure of O2 in alveoli
-P_O2_cap_init  = 0.1;   % [   mmHg    ] Partial pressure of O2 in capillary
-P_CO2_alv_init = 0.3;   % [   mmHg    ] Partial pressure of CO2 in alveoli
-P_CO2_cap_init =  35;   % [   mmHg    ] Partial pressure of CO2 in capillary
+alv.O2.init = 160;      % [   mmHg    ] Partial pressure of O2 in alveoli
+alv.CO2.init = 0.3;     % [   mmHg    ] Partial pressure of CO2 in alveoli
+cap.O2.init = 0.1;      % [   mmHg    ] Partial pressure of O2 in capillary
+cap.CO2.init = 35;      % [   mmHg    ] Partial pressure of CO2 in capillary
 fprintf('Initial conditions set\n'); %lgf
 
 %% Main Computation Loop
@@ -91,10 +90,10 @@ cap.CO2.dPdt = zeros(size(time));   % Capillary | CO2
 fprintf('Space preallocated for variables\n'); %lgf
 
 % Store Initial Conditions
-alv.O2.P(1) = P_O2_alv_init;        % Alveolus  | O2
-alv.CO2.P(1) = P_CO2_alv_init;      % Alveolus  | CO2
-cap.O2.P(1) = P_O2_cap_init;        % Capillary | O2
-cap.CO2.P(1) = P_CO2_cap_init;      % Capillary | CO2
+alv.O2.P(1) = alv.O2.init;          % Alveolus  | O2
+alv.CO2.P(1) = alv.CO2.init;        % Alveolus  | CO2
+cap.O2.P(1) = cap.O2.init;          % Capillary | O2
+cap.CO2.P(1) = cap.CO2.init;        % Capillary | CO2
 fprintf('Initial conditions stored\n'); %lgf
 
 fprintf('Entering main loop...');
@@ -118,10 +117,10 @@ for currentTimeStep = 1:1:length(time)
     end
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
-    diffusion.O2Alv = SA*D__O2*beta__O2 * ( (cap.O2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
-    diffusion.CO2Alv = SA*D_CO2*beta_CO2 * ( (cap.CO2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
-    diffusion.O2Cap = SA*D__O2*beta__O2 * ( (alv.O2.P(currentTimeStep) - cap.O2.P(currentTimeStep))/l );
-    diffusion.CO2Cap = SA*D_CO2*beta_CO2 * ( (alv.CO2.P(currentTimeStep) - cap.CO2.P(currentTimeStep))/l );
+    diffusion.O2Alv = SA*molPara.O2.D*molPara.O2.beta * ( (cap.O2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
+    diffusion.CO2Alv = SA*molPara.CO2.D*molPara.CO2.beta * ( (cap.CO2.P(currentTimeStep) - alv.O2.P(currentTimeStep))/l );
+    diffusion.O2Cap = SA*molPara.O2.D*molPara.O2.beta * ( (alv.O2.P(currentTimeStep) - cap.O2.P(currentTimeStep))/l );
+    diffusion.CO2Cap = SA*molPara.CO2.D*molPara.O2.beta * ( (alv.CO2.P(currentTimeStep) - cap.CO2.P(currentTimeStep))/l );
 
     % Calculate partial pressure changes due to convection
     convection.O2Alv = ( alv.flow.in*air.O2.P - alv.flow.out*alv.O2.P(currentTimeStep) ) / alv.V(currentTimeStep);
