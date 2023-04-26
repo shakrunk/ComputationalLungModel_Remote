@@ -27,7 +27,7 @@ fprintf("<strong># Authors:</strong>\n#   - Neil A. Kumar\n#   - " + ...    %lgf
 fprintf("<strong># Dependencies:</strong> None\n");                         %lgf
 
 % Create A Figure Counter
-figCount = 1;
+figureCounter = 1;
 
 %% Parameter Initialization
 fprintf('\n--- Parameter Initialization ---\n'); %lgf
@@ -35,26 +35,24 @@ fprintf('\n--- Parameter Initialization ---\n'); %lgf
 % Initialize Time Parameters
 total_time = 60*1;      % [     s     ] Total simulation time
 dt = 0.01;              % [     s     ] Time step 
-t = 0:dt:total_time;    % [     s     ] Time vector
+time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
 % Create Model Constants
 V_Tidal = 500e-3;       % [     L     ] Alveolar tidal volume (assume 500 mL)
 BR = 16;                % [breaths/min] Breath Rate
 SA = 1e-6;              % [   cm^2    ] Surface Area
-R = 8.314;              % [ J/(mol*K) ] Molar gas constant
-T = 310;                % [     K     ] Body temperature
-B_O2 = 4.5;             % [ unit-less ] O2 Partition coefficient
+B__O2 = 4.5;            % [ unit-less ] O2 Partition coefficient
 B_CO2 = 4.5;            % [ unit-less ] CO2 Partition coefficient
-D_O2 = 1;               % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
+D__O2 = 1;              % [  cm^2/s   ] O2 Diffusion coefficient (pressure)
 D_CO2 = 1;              % [  cm^2/s   ] CO2 Diffusion coefficient (pressure)
 l = 1e-4;               % [    cm     ] Width of lung membrane
 V_Cap = 1;              % [     L     ] Capilary volume (current random)
 Q_Cap = V_Cap/10;       % [    L/s    ] Capilary flow rate
 P__O2_AIn = 160;        % [   mmHg    ] Room air O2 partial pressure
 P_CO2_AIn = 0.3;        % [   mmHg    ] Room air CO2 partial pressure
-P__O2_BIn = 0.1;        % [   mmHg    ] Arterial blood O2 partial pressure
-P_CO2_BIn = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
+P__O2_Art = 0.1;        % [   mmHg    ] Arterial blood O2 partial pressure
+P_CO2_Art = 35;         % [   mmHg    ] Arterial blood CO2 partial pressure
 fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
@@ -73,15 +71,15 @@ fprintf('Initial conditions set\n'); %lgf
 fprintf('\n--- Main Computationn Loop ---\n'); %lgf
 
 % Preallocate Memory for Variables
-dPdt__O2_cap = zeros(size(t));
-dPdt_CO2_cap = zeros(size(t));
-dPdt__O2_alv = zeros(size(t));
-dPdt_CO2_alv = zeros(size(t));
-P__O2_alv = zeros(size(t));
-P_CO2_alv = zeros(size(t));
-P__O2_cap = zeros(size(t));
-P_CO2_cap = zeros(size(t));
-V_Alv = zeros(size(t));
+dPdt__O2_cap = zeros(size(time));
+dPdt_CO2_cap = zeros(size(time));
+dPdt__O2_alv = zeros(size(time));
+dPdt_CO2_alv = zeros(size(time));
+P__O2_alv = zeros(size(time));
+P_CO2_alv = zeros(size(time));
+P__O2_cap = zeros(size(time));
+P_CO2_cap = zeros(size(time));
+V_Alv = zeros(size(time));
 fprintf('Space preallocated for variables\n'); %lgf
 
 % Store Initial Conditions
@@ -92,11 +90,11 @@ P_CO2_cap(1) = P_CO2_cap_init;
 fprintf('Initial conditions stored\n'); %lgf
 
 fprintf('Entering main loop...');
-for i = 1:1:length(t)
+for currentTimeStep = 1:1:length(time)
     
     % Find the current volume and flow rates (alveolus)
-    V_Alv(i) = V_Func(t(i));
-    dVdt = dVdt_Func(t(i));
+    V_Alv(currentTimeStep) = V_Func(time(currentTimeStep));
+    dVdt = dVdt_Func(time(currentTimeStep));
     if dVdt > 0
         % Flow into the lungs
         Q__AIn = dVdt;
@@ -112,28 +110,28 @@ for i = 1:1:length(t)
     end
 
     % Calculate partial pressure changes due to diffusion (Ficks 1st Law)
-    diffRate__O2Alv = SA*D_O2*B_O2 * ( (P__O2_cap(i) - P__O2_alv(i))/l );
-    diffRate_CO2Alv = SA*D_CO2*B_CO2 * ( (P_CO2_cap(i) - P_CO2_alv(i))/l );
-    diffRate__O2Cap = SA*D_O2*B_O2 * ( (P__O2_alv(i) - P__O2_cap(i))/l );
-    diffRate_CO2Cap = SA*D_CO2*B_CO2 * ( (P_CO2_alv(i) - P_CO2_cap(i))/l );
+    diffRate__O2Alv = SA*D__O2*B__O2 * ( (P__O2_cap(currentTimeStep) - P__O2_alv(currentTimeStep))/l );
+    diffRate_CO2Alv = SA*D_CO2*B_CO2 * ( (P_CO2_cap(currentTimeStep) - P_CO2_alv(currentTimeStep))/l );
+    diffRate__O2Cap = SA*D__O2*B__O2 * ( (P__O2_alv(currentTimeStep) - P__O2_cap(currentTimeStep))/l );
+    diffRate_CO2Cap = SA*D_CO2*B_CO2 * ( (P_CO2_alv(currentTimeStep) - P_CO2_cap(currentTimeStep))/l );
 
     % Calculate partial pressure changes due to convection
-    flowRate__O2Alv = ( Q__AIn*P__O2_AIn - Q_AOut*P__O2_alv(i) ) / V_Alv(i);
-    flowRate_CO2Alv = ( Q__AIn*P_CO2_AIn - Q_AOut*P_CO2_alv(i) ) / V_Alv(i);
-    flowRate__O2Cap = ( (P__O2_BIn - P__O2_cap(i))*Q_Cap ) / V_Cap;
-    flowRate_CO2Cap = ( (P_CO2_BIn - P_CO2_cap(i))*Q_Cap ) / V_Cap;
+    flowRate__O2Alv = ( Q__AIn*P__O2_AIn - Q_AOut*P__O2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
+    flowRate_CO2Alv = ( Q__AIn*P_CO2_AIn - Q_AOut*P_CO2_alv(currentTimeStep) ) / V_Alv(currentTimeStep);
+    flowRate__O2Cap = ( (P__O2_Art - P__O2_cap(currentTimeStep))*Q_Cap ) / V_Cap;
+    flowRate_CO2Cap = ( (P_CO2_Art - P_CO2_cap(currentTimeStep))*Q_Cap ) / V_Cap;
 
     % Compute total partial pressure change (diffusion + convective flow)
-    dPdt__O2_alv(i) = diffRate__O2Alv + flowRate__O2Alv;
-    dPdt_CO2_alv(i) = diffRate_CO2Alv + flowRate_CO2Alv;
-    dPdt__O2_cap(i) = diffRate__O2Cap + flowRate__O2Cap;
-    dPdt_CO2_cap(i) = diffRate_CO2Cap + flowRate_CO2Cap;
+    dPdt__O2_alv(currentTimeStep) = diffRate__O2Alv + flowRate__O2Alv;
+    dPdt_CO2_alv(currentTimeStep) = diffRate_CO2Alv + flowRate_CO2Alv;
+    dPdt__O2_cap(currentTimeStep) = diffRate__O2Cap + flowRate__O2Cap;
+    dPdt_CO2_cap(currentTimeStep) = diffRate_CO2Cap + flowRate_CO2Cap;
     
     % Update alveolar partial pressures
-    P__O2_alv(i+1) = P__O2_alv(i) + (dPdt__O2_alv(i) * dt);
-    P_CO2_alv(i+1) = P_CO2_alv(i) + (dPdt_CO2_alv(i) * dt);
-    P__O2_cap(i+1) = P__O2_cap(i) + (dPdt__O2_cap(i) * dt);
-    P_CO2_cap(i+1) = P_CO2_cap(i) + (dPdt_CO2_cap(i) * dt);
+    P__O2_alv(currentTimeStep+1) = P__O2_alv(currentTimeStep) + (dPdt__O2_alv(currentTimeStep) * dt);
+    P_CO2_alv(currentTimeStep+1) = P_CO2_alv(currentTimeStep) + (dPdt_CO2_alv(currentTimeStep) * dt);
+    P__O2_cap(currentTimeStep+1) = P__O2_cap(currentTimeStep) + (dPdt__O2_cap(currentTimeStep) * dt);
+    P_CO2_cap(currentTimeStep+1) = P_CO2_cap(currentTimeStep) + (dPdt_CO2_cap(currentTimeStep) * dt);
 
 end
 fprintf('Success! (Loop completed)\n'); %lgf
@@ -142,68 +140,68 @@ fprintf('Success! (Loop completed)\n'); %lgf
 fprintf('\n--- Result Plotting ---\n'); %lgf
 
 % Plot the volume of the lungs
-figure(figCount); clf; figCount=figCount+1; %bppd
-plot(t, V_Alv);
+figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
+plot(time, V_Alv);
 xlabel('Time (s)');
 ylabel('Volume (L)');
 title('Alveolar Volume Over Time');
-fprintf('Results printed to figure %i\n',figCount-1);
+fprintf('Results printed to figure %i\n',figureCounter-1);
 ylim([0 6]);
 
 % Plot the results (Partial Pressures)
-figure(figCount); clf; figCount=figCount+1; %bppd
+figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
 subplot(2, 2, 1);
-    plot(t, P__O2_alv(2:end));
+    plot(time, P__O2_alv(2:end));
     xlabel('Time (s)');
     ylabel('Alveolus O_2 Partial Pressure (mmHg)');
     title('Alveolus Oxygen Partial Pressure');
-    fprintf('Results printed to figure %i, sublot 1\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 1\n',figureCounter-1);
 subplot(2, 2, 2);
-    plot(t, P_CO2_alv(2:end));
+    plot(time, P_CO2_alv(2:end));
     xlabel('Time (s)');
     ylabel('Alveolus CO_2 Partial Pressure (mmHg)');
     title('Alveolus Carbon Dioxide Partial Pressure');
-    fprintf('Results printed to figure %i, sublot 2\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 2\n',figureCounter-1);
 subplot(2, 2, 3);
-    plot(t, P__O2_cap(2:end));
+    plot(time, P__O2_cap(2:end));
     xlabel('Time (s)');
     ylabel('Capillary O_2 Partial Pressure (mmHg)');
     title('Capillary Oxygen Partial Pressure');
-    fprintf('Results printed to figure %i, sublot 3\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 3\n',figureCounter-1);
 subplot(2, 2, 4);
-    plot(t, P_CO2_cap(2:end));
+    plot(time, P_CO2_cap(2:end));
     xlabel('Time (s)');
     ylabel('Capillary CO_2 Partial Pressure (mmHg)');
     title('Capillary Carbon Dioxide Partial Pressure');
-    fprintf('Results printed to figure %i, sublot 4\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 4\n',figureCounter-1);
 sgtitle('Partial Pressure');
 
 % Plot the results (Change)
-figure(figCount); clf; figCount=figCount+1; %bppd
+figure(figureCounter); clf; figureCounter=figureCounter+1; %bppd
 subplot(2, 2, 1);
-    plot(t, dPdt__O2_alv);
+    plot(time, dPdt__O2_alv);
     xlabel('Time (s)');
     ylabel('Change in Alveolus O_2 (mmHg/s)');
     title('Change in Alveolus Oxygen');
-    fprintf('Results printed to figure %i, sublot 1\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 1\n',figureCounter-1);
 subplot(2, 2, 2);
-    plot(t, dPdt_CO2_alv);
+    plot(time, dPdt_CO2_alv);
     xlabel('Time (s)');
     ylabel('Change in Alveolus CO_2 (mmHg/s)');
     title('Change in Alveolus Carbon Dioxide');
-    fprintf('Results printed to figure %i, sublot 2\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 2\n',figureCounter-1);
 subplot(2, 2, 3);
-    plot(t, dPdt__O2_cap);
+    plot(time, dPdt__O2_cap);
     xlabel('Time (s)');
     ylabel('Change in Capillary O_2 (mmHg/s)');
     title('Change in Capillary Oxygen');
-    fprintf('Results printed to figure %i, sublot 3\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 3\n',figureCounter-1);
 subplot(2, 2, 4);
-    plot(t, dPdt_CO2_cap);
+    plot(time, dPdt_CO2_cap);
     xlabel('Time (s)');
     ylabel('Change in Capillary CO_2 (mmHg/s)');
     title('Change in Capillary Carbon Dioxide');
-    fprintf('Results printed to figure %i, sublot 4\n',figCount-1);
+    fprintf('Results printed to figure %i, sublot 4\n',figureCounter-1);
 sgtitle('Change in Partial Pressure');
 
 %% Program End
