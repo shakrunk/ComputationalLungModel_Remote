@@ -39,7 +39,7 @@ t = 0:dt:total_time;    % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
 % Create Model Constants
-V_A = 500e-3;           % [     L     ] Alveolar tidal volume (assume 500 mL)
+V_Tidal = 500e-3;       % [     L     ] Alveolar tidal volume (assume 500 mL)
 BR = 16;                % [breaths/min] Breath Rate
 SA = 1e-6;              % [   cm^2    ] Surface Area
 R = 8.314;              % [ J/(mol*K) ] Molar gas constant
@@ -59,8 +59,8 @@ fprintf('Model constants created\n'); %lgf
 
 % Volume functions 
 % (note: dVdt_Func should be an analytic derivative of V_Func)
-V_Func = @(t) (V_A/2) * sin(2*pi*BR*t/60) + 5;
-dVdt_Func = @(t) (2*pi*BR*V_A/120) * cos(2*pi*BR*t/60);
+V_Func = @(t) (V_Tidal/2) * sin(2*pi*BR*t/60) + 5;
+dVdt_Func = @(t) (2*pi*BR*V_Tidal/120) * cos(2*pi*BR*t/60);
 
 % Set Initial Conditions
 P_O2_alv_init  = 160;   % [   mmHg    ] Partial pressure of O2 in alveoli
