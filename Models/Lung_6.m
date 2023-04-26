@@ -58,7 +58,8 @@ P__O2_BIn = 0.1;
 P_CO2_BIn = 35;
 fprintf('Model constants created\n'); %lgf
 
-% Volume functions????
+% Volume functions 
+% (note: dVdt_Func should be an analytic derivative of V_Func)
 V_Func = @(t) (V_A/2) * sin(2*pi*BR*t/60) + 5;
 dVdt_Func = @(t) (2*pi*BR*V_A/120) * cos(2*pi*BR*t/60);
 
