@@ -123,7 +123,7 @@ for i = 1:1:length(t)
     flowRate__O2Cap = ( (P__O2_BIn - P__O2_cap(i))*Q_Cap ) / V_Cap;
     flowRate_CO2Cap = ( (P_CO2_BIn - P_CO2_cap(i))*Q_Cap ) / V_Cap;
 
-    % Compute exchange rates (use simple linear relationships)
+    % Compute total partial pressure change (diffusion + convective flow)
     dPdt__O2_alv(i) = diffRate__O2Alv + flowRate__O2Alv;
     dPdt_CO2_alv(i) = diffRate_CO2Alv + flowRate_CO2Alv;
     dPdt__O2_cap(i) = diffRate__O2Cap + flowRate__O2Cap;
