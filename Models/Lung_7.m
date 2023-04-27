@@ -39,10 +39,10 @@ time = 0:dt:total_time; % [     s     ] Time vector
 fprintf('Time parameters initialized\n'); %lgf
 
 % Initialize Molecule Parameters (O2 and CO2)
-molPara.O2.beta = 4e-6; % [ unit-less ] O2 oil-water partition coefficient
-molPara.O2.D = 4e-6;    % [   m^2/s   ] O2 Diffusion coefficient (pressure)
+molPara.O2.beta = 3e-6; % [ unit-less ] O2 oil-water partition coefficient
+molPara.O2.D = 4.8e-6;  % [   m^2/s   ] O2 Diffusion coefficient (pressure)
 molPara.CO2.beta = 4e-6;% [ unit-less ] CO2 oil-water partition coefficient
-molPara.CO2.D = 4e-6;   % [   m^2/s   ] CO2 Diffusion coefficient (pressure)
+molPara.CO2.D = 4.2e-6; % [   m^2/s   ] CO2 Diffusion coefficient (pressure)
 fprintf('Molecule parameters initialized\n'); %lgf
 
 % Initialize Environmental Parameters
